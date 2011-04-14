@@ -1,7 +1,15 @@
 require 'digest/sha2'
+require 'uri'
 
 class Libravatar
   attr_accessor :size, :email, :openid, :size
+
+  def self.normalize_openid(s)
+    x = URI.parse(s)
+    x.host.downcase!
+    x.scheme = x.scheme.downcase
+    return x.to_s
+  end
 
   def initialize(options = {})
     @email = options[:email]
