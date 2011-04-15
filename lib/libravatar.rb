@@ -37,6 +37,7 @@ class Libravatar
 
   # Generate the libravatar URL
   def to_s
+    @email.downcase! if @email
     id = Digest::SHA2.hexdigest(@email || self.class.normalize_openid(@openid))
     return "http://cdn.libravatar.org/avatar/" + id
   end
