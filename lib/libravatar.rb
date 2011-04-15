@@ -15,17 +15,6 @@ require 'uri'
 class Libravatar
   attr_accessor :size, :email, :openid, :size
 
-  # Normalize an openid URL following the description on libravatar.org
-  def self.normalize_openid(s)
-    x = URI.parse(s)
-    x.host.downcase!
-    x.scheme = x.scheme.downcase
-    if (x.path == "" && x.fragment == nil)
-      x.path = "/"
-    end
-    return x.to_s
-  end
-
   # The options should contain :email or :openid values.  If both are
   # given, email will be used. The value of openid and email will be
   # normalized by the rule described in http://www.libravatar.org/api
@@ -38,7 +27,20 @@ class Libravatar
   # Generate the libravatar URL
   def to_s
     @email.downcase! if @email
-    id = Digest::SHA2.hexdigest(@email || self.class.normalize_openid(@openid))
+    id = Digest::SHA2.hexdigest(@email || normalize_openid(@openid))
     return "http://cdn.libravatar.org/avatar/" + id
+  end
+
+  private
+
+  # Normalize an openid URL following the description on libravatar.org
+  def normalize_openid(s)
+    x = URI.parse(s)
+    x.host.downcase!
+    x.scheme = x.scheme.downcase
+    if (x.path == "" && x.fragment == nil)
+      x.path = "/"
+    end
+    return x.to_s
   end
 end

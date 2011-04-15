@@ -19,8 +19,9 @@ class TestLibravatar < Test::Unit::TestCase
   end
 
   should "Normalize OpenID" do
-    assert_equal Libravatar.normalize_openid("HTTP://EXAMPLE.COM/id/Bob"), "http://example.com/id/Bob"
+    x = Libravatar.new
+    assert_equal x.send(:normalize_openid, "HTTP://EXAMPLE.COM/id/Bob"), "http://example.com/id/Bob"
 
-    assert_equal Libravatar.normalize_openid("HTTP://EXAMPLE.COM"), "http://example.com/"
+    assert_equal x.send(:normalize_openid, "HTTP://EXAMPLE.COM"), "http://example.com/"
   end
 end
