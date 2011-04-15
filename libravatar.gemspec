@@ -23,6 +23,7 @@ Gem::Specification.new do |s|
     "Rakefile",
     "VERSION",
     "lib/libravatar.rb",
+    "libravatar.gemspec",
     "test/helper.rb",
     "test/test_libravatar.rb"
   ]
