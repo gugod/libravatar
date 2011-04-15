@@ -1,6 +1,7 @@
 = libravatar
 
-Description goes here.
+http://libravatar.org is an avatar service to let their users associate avatar images
+with their emails or openids. This rubygem generates their avatar URL.
 
 == Contributing to libravatar
  
