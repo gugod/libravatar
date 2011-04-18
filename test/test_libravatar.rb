@@ -9,6 +9,10 @@ class TestLibravatar < Test::Unit::TestCase
 
     assert_equal Libravatar.new(:email => "USER@ExAmPlE.CoM").to_s, "http://cdn.libravatar.org/avatar/b4c9a289323b21a01c3e940f150eb9b8c542587f1abfd8f0e1cc1ffc5e475514"
 
+    assert_equal Libravatar.new(:email => "user@example.com", :https => true).to_s, "https://seccdn.libravatar.org/avatar/b4c9a289323b21a01c3e940f150eb9b8c542587f1abfd8f0e1cc1ffc5e475514"
+
+    assert_equal Libravatar.new(:email => "user@example.com", :https => false).to_s, "http://cdn.libravatar.org/avatar/b4c9a289323b21a01c3e940f150eb9b8c542587f1abfd8f0e1cc1ffc5e475514"
+
     assert_equal Libravatar.new(:email => "USER@ExAmPlE.CoM", :default => "http://example.com/avatar.png").to_s, "http://cdn.libravatar.org/avatar/b4c9a289323b21a01c3e940f150eb9b8c542587f1abfd8f0e1cc1ffc5e475514?d=http://example.com/avatar.png"
 
     assert_equal Libravatar.new(:email => "USER@ExAmPlE.CoM", :size => 512, :default => "mm").to_s, "http://cdn.libravatar.org/avatar/b4c9a289323b21a01c3e940f150eb9b8c542587f1abfd8f0e1cc1ffc5e475514?s=512&d=mm"
