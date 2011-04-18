@@ -24,6 +24,7 @@ class Libravatar
   # - :email
   # - :openid
   # - :size An integer ranged 1 - 512, default is 80.
+  # - :default URL (or special value) to redirect missing avatars to
   #
   def initialize(options = {})
     @email   = options[:email]
