@@ -9,6 +9,7 @@
 # License:: MIT
 #
 
+require 'digest/md5'
 require 'digest/sha2'
 require 'uri'
 
@@ -34,8 +35,12 @@ class Libravatar
 
   # Generate the libravatar URL
   def to_s
-    @email.downcase! if @email
-    id = Digest::SHA2.hexdigest(@email || normalize_openid(@openid))
+    if @email
+      @email.downcase!
+      id = Digest::MD5.hexdigest(@email)
+    else
+      id = Digest::SHA2.hexdigest(normalize_openid(@openid))
+    end
     s  = @size ? "s=#{@size}" : nil
     d  = @default ? "d=#{@default}" : nil
 
