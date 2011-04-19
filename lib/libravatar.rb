@@ -26,7 +26,7 @@ class Libravatar
   # - :openid
   # - :size An integer ranged 1 - 512, default is 80.
   # - :https Set to true to serve avatars over SSL
-  # - :default URL (or special value) to redirect missing avatars to
+  # - :default URL to redirect missing avatars to, or one of these specials: "404", "mm", "identicon", "monsterid", "wavatar", "retro"
   #
   def initialize(options = {})
     @email   = options[:email]
