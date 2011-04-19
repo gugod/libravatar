@@ -14,7 +14,7 @@ require 'digest/sha2'
 require 'uri'
 
 class Libravatar
-  attr_accessor :email, :openid, :size, :default
+  attr_accessor :email, :openid, :size, :default, :https
 
   # The options should contain :email or :openid values.  If both are
   # given, email will be used. The value of openid and email will be
@@ -25,12 +25,14 @@ class Libravatar
   # - :email
   # - :openid
   # - :size An integer ranged 1 - 512, default is 80.
+  # - :https Set to true to serve avatars over SSL
   #
   def initialize(options = {})
     @email   = options[:email]
     @openid  = options[:openid]
     @size    = options[:size]
     @default = options[:default]
+    @https   = options[:https]
   end
 
   # Generate the libravatar URL
@@ -46,7 +48,8 @@ class Libravatar
 
     query = [s,d].reject{|x|!x}.join("&")
     query = "?#{query}" unless query == ""
-    return "http://cdn.libravatar.org/avatar/" + id + query
+    baseurl = @https ? "https://seccdn.libravatar.org/avatar/" : "http://cdn.libravatar.org/avatar/"
+    return baseurl + id + query
   end
 
   private

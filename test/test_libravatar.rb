@@ -9,6 +9,10 @@ class TestLibravatar < Test::Unit::TestCase
 
     assert_equal Libravatar.new(:email => "USER@ExAmPlE.CoM").to_s, "http://cdn.libravatar.org/avatar/b58996c504c5638798eb6b511e6f49af"
 
+    assert_equal Libravatar.new(:email => "user@example.com", :https => true).to_s, "https://seccdn.libravatar.org/avatar/b58996c504c5638798eb6b511e6f49af"
+
+    assert_equal Libravatar.new(:email => "user@example.com", :https => false).to_s, "http://cdn.libravatar.org/avatar/b58996c504c5638798eb6b511e6f49af"
+
     assert_equal Libravatar.new(:email => "USER@ExAmPlE.CoM", :default => "http://example.com/avatar.png").to_s, "http://cdn.libravatar.org/avatar/b58996c504c5638798eb6b511e6f49af?d=http://example.com/avatar.png"
 
     assert_equal Libravatar.new(:email => "USER@ExAmPlE.CoM", :size => 512, :default => "mm").to_s, "http://cdn.libravatar.org/avatar/b58996c504c5638798eb6b511e6f49af?s=512&d=mm"
