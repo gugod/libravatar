@@ -12,6 +12,7 @@
 require 'digest/md5'
 require 'digest/sha2'
 require 'uri'
+require 'resolv'
 
 class Libravatar
   attr_accessor :email, :openid, :size, :default, :https
@@ -36,6 +37,47 @@ class Libravatar
     @https   = options[:https]
   end
 
+  def get_target_domain
+    return @email.split('@')[1] if @email
+    return URI.parse(@openid).host
+  end
+
+  # All the values which are different between HTTP and HTTPS methods.
+  @@profiles = [
+    { :scheme => 'http://',
+      :host => 'cdn.libravatar.org',
+      :srv => '_avatars._tcp.',
+      :port => 80 },
+    { :scheme => 'https://',
+      :host => 'seccdn.libravatar.org',
+      :srv => '_avatars-sec._tcp.',
+      :port => 443 }
+    ]
+
+  # Grab the DNS SRV records associated with the target domain,
+  # and choose one according to RFC2782.
+  def get_base_url
+    profile = @@profiles[ @https ? 1 : 0 ]
+    Resolv::DNS::open do |dns|
+      rrs = dns.getresources(profile[:srv] + get_target_domain(),
+        Resolv::DNS::Resource::IN::SRV).to_a
+      return profile[:scheme] + profile[:host] unless rrs.any?
+
+      min_priority = rrs.map{ |r| r.priority }.min
+      rrs.delete_if{ |r| r.priority != min_priority }
+      rrs = rrs.select{ |r| r.weight == 0 } +
+            rrs.select{ |r| r.weight > 0 }.shuffle
+
+      weight_sum = rrs.inject(0) { |a,r| a+r.weight }
+      value = rand( weight_sum + 1 )
+      rrs.each do |r|
+        port_fragment = r.port != profile[:port] ? ':' + r.port : ''
+        return profile[:scheme] + r.target.to_s + port_fragment if r.weight <= value
+        value -= r.weight
+      end
+    end
+  end
+
   # Generate the libravatar URL
   def to_s
     if @email
@@ -49,7 +91,7 @@ class Libravatar
 
     query = [s,d].reject{|x|!x}.join("&")
     query = "?#{query}" unless query == ""
-    baseurl = @https ? "https://seccdn.libravatar.org/avatar/" : "http://cdn.libravatar.org/avatar/"
+    baseurl = get_base_url() + '/avatar/'
     return baseurl + id + query
   end
 
