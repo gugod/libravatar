@@ -37,4 +37,9 @@ class TestLibravatar < Test::Unit::TestCase
 
     assert_equal x.send(:normalize_openid, "HTTP://EXAMPLE.COM"), "http://example.com/"
   end
+
+  should "Retured the federated URI" do
+    avatar = Libravatar.new(:email => 'invalid@catalyst.net.nz')
+    assert_equal avatar.to_s, 'http://static.avatars.catalyst.net.nz/avatar/f924d1e9f2c10ee9efa7acdd16484c2f'
+  end
 end
