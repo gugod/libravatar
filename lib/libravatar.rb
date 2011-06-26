@@ -7,6 +7,7 @@
 # Author:: Kang-min Liu (http://gugod.org)
 # Copyright:: Copyright (c) 2011 Kang-min Liu
 # License:: MIT
+# Contributors:: https://github.com/gugod/libravatar/contributors
 #
 
 require 'digest/md5'
