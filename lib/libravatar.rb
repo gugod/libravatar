@@ -57,7 +57,7 @@ class Libravatar
 
   # Grab the DNS SRV records associated with the target domain,
   # and choose one according to RFC2782.
-  def srv_hostname
+  def srv_lookup
     profile = @@profiles[ @https ? 1 : 0 ]
     Resolv::DNS::open do |dns|
       rrs = dns.getresources(profile[:srv] + get_target_domain(),
@@ -81,7 +81,7 @@ class Libravatar
 
   def get_base_url
     profile = @@profiles[ @https ? 1 : 0 ]
-    target, port = srv_hostname
+    target, port = srv_lookup
 
     if (target && port) 
       port_fragment = port != profile[:port] ? ':' + port : ''
@@ -109,6 +109,14 @@ class Libravatar
   end
 
   private
+
+  def sanitize_srv_lookup(hostname, port)
+    unless hostname.match(/^[0-9a-zA-Z\-.]+$/) && 1 <= port && port <= 65535
+      return [nil, nil]
+    end
+
+    return [hostname, port]
+  end
 
   # Normalize an openid URL following the description on libravatar.org
   def normalize_openid(s)
