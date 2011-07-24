@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Kang-min Liu"]
-  s.date = %q{2011-06-26}
+  s.date = %q{2011-07-24}
   s.description = %q{libravatar.org provides avatar image hosting (like gravatar.com). Their users may associate avatar images with email or openid. This rubygem can be used to generate libravatar avatar image URL}
   s.email = %q{gugod@gugod.org}
   s.extra_rdoc_files = [
