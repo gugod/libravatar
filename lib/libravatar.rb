@@ -57,12 +57,13 @@ class Libravatar
 
   # Grab the DNS SRV records associated with the target domain,
   # and choose one according to RFC2782.
-  def get_base_url
+  def srv_hostname
     profile = @@profiles[ @https ? 1 : 0 ]
     Resolv::DNS::open do |dns|
       rrs = dns.getresources(profile[:srv] + get_target_domain(),
         Resolv::DNS::Resource::IN::SRV).to_a
-      return profile[:scheme] + profile[:host] unless rrs.any?
+      return [nil, nil] unless rrs.any?
+
 
       min_priority = rrs.map{ |r| r.priority }.min
       rrs.delete_if{ |r| r.priority != min_priority }
@@ -72,10 +73,21 @@ class Libravatar
       weight_sum = rrs.inject(0) { |a,r| a+r.weight }
       value = rand( weight_sum + 1 )
       rrs.each do |r|
-        port_fragment = r.port != profile[:port] ? ':' + r.port : ''
-        return profile[:scheme] + r.target.to_s + port_fragment if r.weight <= value
+        return [r.target, r.port] if r.weight <= value
         value -= r.weight
       end
+    end
+  end
+
+  def get_base_url
+    profile = @@profiles[ @https ? 1 : 0 ]
+    target, port = srv_hostname
+
+    if (target && port) 
+      port_fragment = port != profile[:port] ? ':' + port : ''
+      return profile[:scheme] + target.to_s + port_fragment
+    else
+      return profile[:scheme] + profile[:host]
     end
   end
 
