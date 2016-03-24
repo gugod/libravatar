@@ -38,14 +38,6 @@ class Libravatar
     @https   = https
   end
 
-  def get_target_domain
-    if @email
-      @email.split('@')[1]
-    else
-      URI.parse(@openid).host
-    end
-  end
-
   # All the values which are different between HTTP and HTTPS methods.
   PROFILES = [
       {
@@ -62,41 +54,8 @@ class Libravatar
       }
   ]
 
-  # Grab the DNS SRV records associated with the target domain,
-  # and choose one according to RFC2782.
-  def srv_lookup
-    profile = PROFILES[ @https ? 1 : 0 ]
-    Resolv::DNS::open do |dns|
-      rrs = dns.getresources(profile[:srv] + get_target_domain,
-        Resolv::DNS::Resource::IN::SRV).to_a
-      return [nil, nil] unless rrs.any?
-
-
-      min_priority = rrs.map{ |r| r.priority }.min
-      rrs.delete_if{ |r| r.priority != min_priority }
-
-      weight_sum = rrs.inject(0) { |a,r| a+r.weight }.to_f
-
-      r = rrs.max_by { |r| r.weight == 0 ? 0 : rand ** (weight_sum / r.weight) }
-
-      return [r.target, r.port]
-    end
-  end
-
-  def get_base_url
-    profile = PROFILES[ @https ? 1 : 0 ]
-    target, port = srv_lookup
-
-    if target && port
-      port_fragment = port != profile[:port] ? ':' + port.to_s : ''
-      profile[:scheme] + target.to_s + port_fragment
-    else
-      profile[:scheme] + profile[:host]
-    end
-  end
-
   # Generate the libravatar URL
-  def to_s
+  def url
     if @email
       @email.downcase!
       id = Digest::MD5.hexdigest(@email)
@@ -113,25 +72,69 @@ class Libravatar
     baseurl + id + query
   end
 
+  alias_method :to_s, :url
+
   private
 
-  def sanitize_srv_lookup(hostname, port)
-    unless hostname.match(/^[0-9a-zA-Z\-.]+$/) && 1 <= port && port <= 65535
-      return [nil, nil]
+    def get_target_domain
+      if @email
+        @email.split('@')[1]
+      else
+        URI.parse(@openid).host
+      end
     end
 
-    [hostname, port]
-  end
+    # Grab the DNS SRV records associated with the target domain,
+    # and choose one according to RFC2782.
+    def srv_lookup
+      profile = PROFILES[ @https ? 1 : 0 ]
+      Resolv::DNS::open do |dns|
+        rrs = dns.getresources(profile[:srv] + get_target_domain,
+                               Resolv::DNS::Resource::IN::SRV).to_a
+        return [nil, nil] unless rrs.any?
 
-  # Normalize an openid URL following the description on libravatar.org
-  def normalize_openid(s)
-    x = URI.parse(s)
-    x.host.downcase!
-    x.scheme = x.scheme.downcase
-    if x.path == '' && x.fragment == nil
-      x.path = '/'
+
+        min_priority = rrs.map{ |r| r.priority }.min
+        rrs.delete_if{ |r| r.priority != min_priority }
+
+        weight_sum = rrs.inject(0) { |a,r| a+r.weight }.to_f
+
+        r = rrs.max_by { |r| r.weight == 0 ? 0 : rand ** (weight_sum / r.weight) }
+
+        return [r.target, r.port]
+      end
     end
 
-    x.to_s
-  end
+    def get_base_url
+      profile = PROFILES[ @https ? 1 : 0 ]
+      target, port = srv_lookup
+
+      if target && port
+        port_fragment = port != profile[:port] ? ':' + port.to_s : ''
+        profile[:scheme] + target.to_s + port_fragment
+      else
+        profile[:scheme] + profile[:host]
+      end
+    end
+
+    def sanitize_srv_lookup(hostname, port)
+      unless hostname.match(/^[0-9a-zA-Z\-.]+$/) && 1 <= port && port <= 65535
+        return [nil, nil]
+      end
+
+      [hostname, port]
+    end
+
+    # Normalize an openid URL following the description on libravatar.org
+    def normalize_openid(s)
+      x = URI.parse(s)
+      x.host.downcase!
+      x.scheme = x.scheme.downcase
+      if x.path == '' && x.fragment == nil
+        x.path = '/'
+      end
+
+      x.to_s
+    end
+
 end
