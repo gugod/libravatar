@@ -30,37 +30,44 @@ class Libravatar
   # - :https Set to true to serve avatars over SSL
   # - :default URL to redirect missing avatars to, or one of these specials: "404", "mm", "identicon", "monsterid", "wavatar", "retro"
   #
-  def initialize(options = {})
-    @email   = options[:email]
-    @openid  = options[:openid]
-    @size    = options[:size]
-    @default = options[:default]
-    @https   = options[:https]
+  def initialize(email: nil, openid: nil, size: nil, default: nil, https: nil)
+    @email   = email
+    @openid  = openid
+    @size    = size
+    @default = default
+    @https   = https
   end
 
   def get_target_domain
-    return @email.split('@')[1] if @email
-    return URI.parse(@openid).host
+    if @email
+      @email.split('@')[1]
+    else
+      URI.parse(@openid).host
+    end
   end
 
   # All the values which are different between HTTP and HTTPS methods.
-  @@profiles = [
-    { :scheme => 'http://',
-      :host => 'cdn.libravatar.org',
-      :srv => '_avatars._tcp.',
-      :port => 80 },
-    { :scheme => 'https://',
-      :host => 'seccdn.libravatar.org',
-      :srv => '_avatars-sec._tcp.',
-      :port => 443 }
-    ]
+  PROFILES = [
+      {
+          scheme: 'http://',
+          host:   'cdn.libravatar.org',
+          srv:    '_avatars._tcp.',
+          port:   80,
+      },
+      {
+          scheme: 'https://',
+          host:   'seccdn.libravatar.org',
+          srv:    '_avatars-sec._tcp.',
+          port:   443,
+      }
+  ]
 
   # Grab the DNS SRV records associated with the target domain,
   # and choose one according to RFC2782.
   def srv_lookup
-    profile = @@profiles[ @https ? 1 : 0 ]
+    profile = PROFILES[ @https ? 1 : 0 ]
     Resolv::DNS::open do |dns|
-      rrs = dns.getresources(profile[:srv] + get_target_domain(),
+      rrs = dns.getresources(profile[:srv] + get_target_domain,
         Resolv::DNS::Resource::IN::SRV).to_a
       return [nil, nil] unless rrs.any?
 
@@ -77,14 +84,14 @@ class Libravatar
   end
 
   def get_base_url
-    profile = @@profiles[ @https ? 1 : 0 ]
+    profile = PROFILES[ @https ? 1 : 0 ]
     target, port = srv_lookup
 
-    if (target && port) 
+    if target && port
       port_fragment = port != profile[:port] ? ':' + port.to_s : ''
-      return profile[:scheme] + target.to_s + port_fragment
+      profile[:scheme] + target.to_s + port_fragment
     else
-      return profile[:scheme] + profile[:host]
+      profile[:scheme] + profile[:host]
     end
   end
 
@@ -99,10 +106,11 @@ class Libravatar
     s  = @size ? "s=#{@size}" : nil
     d  = @default ? "d=#{@default}" : nil
 
-    query = [s,d].reject{|x|!x}.join("&")
-    query = "?#{query}" unless query == ""
-    baseurl = get_base_url() + '/avatar/'
-    return baseurl + id + query
+    query = [s,d].reject{|x|!x}.join('&')
+    query = "?#{query}" unless query == ''
+    baseurl = get_base_url + '/avatar/'
+
+    baseurl + id + query
   end
 
   private
@@ -112,7 +120,7 @@ class Libravatar
       return [nil, nil]
     end
 
-    return [hostname, port]
+    [hostname, port]
   end
 
   # Normalize an openid URL following the description on libravatar.org
@@ -120,9 +128,10 @@ class Libravatar
     x = URI.parse(s)
     x.host.downcase!
     x.scheme = x.scheme.downcase
-    if (x.path == "" && x.fragment == nil)
-      x.path = "/"
+    if x.path == '' && x.fragment == nil
+      x.path = '/'
     end
-    return x.to_s
+
+    x.to_s
   end
 end
