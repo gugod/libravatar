@@ -84,7 +84,7 @@ class Libravatar
     target, port = srv_lookup
 
     if (target && port) 
-      port_fragment = port != profile[:port] ? ':' + port : ''
+      port_fragment = port != profile[:port] ? ':' + port.to_s : ''
       return profile[:scheme] + target.to_s + port_fragment
     else
       return profile[:scheme] + profile[:host]
