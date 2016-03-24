@@ -57,16 +57,17 @@ class Libravatar
   # Generate the libravatar URL
   def url
     if @email
-      @email.downcase!
-      id = Digest::MD5.hexdigest(@email)
+      id = Digest::MD5.hexdigest(normalize_email(@email))
     else
       id = Digest::SHA2.hexdigest(normalize_openid(@openid))
     end
-    s  = @size ? "s=#{@size}" : nil
-    d  = @default ? "d=#{@default}" : nil
 
-    query = [s,d].reject{|x|!x}.join('&')
+    size    = @size ?     "s=#{@size}" : nil
+    default = @default ?  "d=#{@default}" : nil
+
+    query = [ size, default ].reject{ |x| !x }.join('&')
     query = "?#{query}" unless query == ''
+
     baseurl = get_base_url + '/avatar/'
 
     baseurl + id + query
@@ -89,17 +90,17 @@ class Libravatar
     def srv_lookup
       profile = PROFILES[ @https ? 1 : 0 ]
       Resolv::DNS::open do |dns|
-        rrs = dns.getresources(profile[:srv] + get_target_domain,
+        resources = dns.getresources(profile[:srv] + get_target_domain,
                                Resolv::DNS::Resource::IN::SRV).to_a
-        return [nil, nil] unless rrs.any?
+        return [nil, nil] unless resources.any?
 
 
-        min_priority = rrs.map{ |r| r.priority }.min
-        rrs.delete_if{ |r| r.priority != min_priority }
+        min_priority = resources.map{ |r| r.priority }.min
+        resources.delete_if{ |r| r.priority != min_priority }
 
-        weight_sum = rrs.inject(0) { |a,r| a+r.weight }.to_f
+        weight_sum = resources.inject(0) { |sum, r| sum + r.weight }.to_f
 
-        r = rrs.max_by { |r| r.weight == 0 ? 0 : rand ** (weight_sum / r.weight) }
+        r = resources.max_by { |r| r.weight == 0 ? 0 : rand ** (weight_sum / r.weight) }
 
         return [r.target, r.port]
       end
@@ -125,16 +126,20 @@ class Libravatar
       [hostname, port]
     end
 
+    def normalize_email(email)
+      email.downcase
+    end
+
     # Normalize an openid URL following the description on libravatar.org
-    def normalize_openid(s)
-      x = URI.parse(s)
-      x.host.downcase!
-      x.scheme = x.scheme.downcase
-      if x.path == '' && x.fragment == nil
-        x.path = '/'
+    def normalize_openid(url)
+      parsed_url = URI.parse(url)
+      parsed_url.host.downcase!
+      parsed_url.scheme = parsed_url.scheme.downcase
+      if parsed_url.path == '' && parsed_url.fragment == nil
+        parsed_url.path = '/'
       end
 
-      x.to_s
+      parsed_url.to_s
     end
 
 end
