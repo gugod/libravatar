@@ -67,15 +67,12 @@ class Libravatar
 
       min_priority = rrs.map{ |r| r.priority }.min
       rrs.delete_if{ |r| r.priority != min_priority }
-      rrs = rrs.select{ |r| r.weight == 0 } +
-            rrs.select{ |r| r.weight > 0 }.shuffle
 
-      weight_sum = rrs.inject(0) { |a,r| a+r.weight }
-      value = rand( weight_sum + 1 )
-      rrs.each do |r|
-        return [r.target, r.port] if r.weight <= value
-        value -= r.weight
-      end
+      weight_sum = rrs.inject(0) { |a,r| a+r.weight }.to_f
+
+      r = rrs.max_by { |r| r.weight == 0 ? 0 : rand ** (weight_sum / r.weight) }
+
+      return [r.target, r.port]
     end
   end
 
@@ -84,7 +81,7 @@ class Libravatar
     target, port = srv_lookup
 
     if (target && port) 
-      port_fragment = port != profile[:port] ? ':' + port : ''
+      port_fragment = port != profile[:port] ? ':' + port.to_s : ''
       return profile[:scheme] + target.to_s + port_fragment
     else
       return profile[:scheme] + profile[:host]
