@@ -4,20 +4,22 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = %q{libravatar}
-  s.version = "1.2.0"
+  s.name = "libravatar"
+  s.version = "1.3.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Kang-min Liu"]
-  s.date = %q{2011-07-24}
-  s.description = %q{libravatar.org provides avatar image hosting (like gravatar.com). Their users may associate avatar images with email or openid. This rubygem can be used to generate libravatar avatar image URL}
-  s.email = %q{gugod@gugod.org}
+  s.date = "2016-03-27"
+  s.description = "libravatar.org provides avatar image hosting (like gravatar.com). Their users may associate avatar images with email or openid. This rubygem can be used to generate libravatar avatar image URL"
+  s.email = "gugod@gugod.org"
   s.extra_rdoc_files = [
     "LICENSE.txt",
     "README.rdoc"
   ]
   s.files = [
     ".document",
+    ".travis.yml",
+    "Gemfile",
     "LICENSE.txt",
     "README.rdoc",
     "Rakefile",
@@ -27,21 +29,30 @@ Gem::Specification.new do |s|
     "test/helper.rb",
     "test/test_libravatar.rb"
   ]
-  s.homepage = %q{http://github.com/gugod/libravatar}
+  s.homepage = "http://github.com/gugod/libravatar"
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.6.1}
-  s.summary = %q{Avatar URL Generation wih libravatar.org}
+  s.rubygems_version = "2.0.14.1"
+  s.summary = "Avatar URL Generation wih libravatar.org"
 
   if s.respond_to? :specification_version then
-    s.specification_version = 3
+    s.specification_version = 4
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
+      s.add_runtime_dependency(%q<jeweler>, [">= 0"])
+      s.add_runtime_dependency(%q<shoulda>, [">= 0"])
+      s.add_runtime_dependency(%q<minitest>, ["= 4.7.5"])
       s.add_development_dependency(%q<shoulda>, ["> 1.2.3"])
     else
+      s.add_dependency(%q<jeweler>, [">= 0"])
+      s.add_dependency(%q<shoulda>, [">= 0"])
+      s.add_dependency(%q<minitest>, ["= 4.7.5"])
       s.add_dependency(%q<shoulda>, ["> 1.2.3"])
     end
   else
+    s.add_dependency(%q<jeweler>, [">= 0"])
+    s.add_dependency(%q<shoulda>, [">= 0"])
+    s.add_dependency(%q<minitest>, ["= 4.7.5"])
     s.add_dependency(%q<shoulda>, ["> 1.2.3"])
   end
 end
