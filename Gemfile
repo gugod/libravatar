@@ -1,5 +1,8 @@
 source 'https://rubygems.org'
-gem 'jeweler'
-gem 'shoulda'
-gem 'minitest', '4.7.5'
+
+group :development do
+  gem 'jeweler'
+  gem 'shoulda', '> 1.2.3'
+  gem 'minitest', '4.7.5'
+end
 
